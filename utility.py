@@ -111,6 +111,16 @@ class Graph():
 
         return mst
 
+def loadGraphAL(fn):
+  with open(fn) as f:
+    G = []
+    for line in f:
+      if line == '-\n':
+        G.append([])
+      else:
+        nums = [int(x) for x in line.split()]
+        G.append([(nums[i], nums[i+1]) for i in range(0, len(nums), 2)])
+    return G
 
 def readAdjl(fn, haslabels=False, weighted=False, sep="|"):
   with open(fn) as f:
@@ -127,10 +137,10 @@ def readAdjl(fn, haslabels=False, weighted=False, sep="|"):
 
 def adjlShow(L, labels=None, directed=False, weighted=False, path=[],
              simplepath=True,
-             layout="sfdp"):
+             layout="sfdp", defaultcolor="gray"):
   g = gv.Digraph("G") if directed else gv.Graph("G")
   g.graph_attr["layout"] = layout
-  g.edge_attr["color"] = "gray"
+  g.edge_attr["color"] = defaultcolor
   g.node_attr["color"] = "orangered"
   g.node_attr["width"] = "0.1"
   g.node_attr["height"] = "0.1"
