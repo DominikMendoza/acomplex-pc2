@@ -62,15 +62,15 @@ class Graph():
         newNode = [src, weight]
         self.graph[dest].insert(0, newNode)
 
-    def PrimMST(self):
+    def PrimMST(self, start = 0):
         V = self.V 
         visited = [False] * V
         key = [float("inf")] * V
         parent = [-1] * V
         minHeap = []
 
-        heapq.heappush(minHeap, (0, 0))
-        key[0] = 0
+        heapq.heappush(minHeap, (0, start))
+        key[start] = 0
 
         while minHeap:
             _, u = heapq.heappop(minHeap)
@@ -84,7 +84,7 @@ class Graph():
 
         printArr(parent, V)
         return parent
-    #  Aplicando del Algortimo Kruskal
+    
     def kruskal_algo(self):
         n = self.V
         ds = DisjointSet(n)
