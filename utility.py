@@ -1,5 +1,6 @@
 import graphviz as gv
 import heapq
+import math
 from collections import defaultdict
 
 def printArr(parent, n):
@@ -110,7 +111,142 @@ class Graph():
         print("Costo total del MST para el grafo: ", tot_weight)
 
         return mst
+    def johnson(self):
+        # Paso 1: Agregar un nuevo vértice y aristas con peso 0
+        self.graph[self.V] = []
+        for v in range(self.V):
+            self.graph[self.V].append((v, 0))
 
+        # Paso 2: Ejecutar el algoritmo de Bellman-Ford
+        dist = self.bellmanFord(self.V)
+
+        # Si se detecta un ciclo de peso negativo, el algoritmo termina
+        if dist is None:
+            return None
+
+        # Paso 3: Calcular los nuevos pesos para las aristas del grafo original
+        adjusted_weights = self.adjustWeights(dist)
+
+        # Paso 4: Eliminar el vértice agregado y restaurar los pesos originales
+        del self.graph[self.V]
+        for u in self.graph:
+            self.graph[u] = [(v, adjusted_weights[u][v]) for v in self.graph[u]]
+
+        # Paso 5: Ejecutar el algoritmo de Dijkstra para cada par de vértices
+        shortest_paths = []
+        for u in range(self.V):
+            shortest_path = self.dijkstra(u)
+            shortest_paths.append(shortest_path)
+
+        return shortest_paths
+
+    def bellmanFord(self, src):
+        dist = [float('inf')] * (self.V + 1)
+        dist[src] = 0
+
+        for _ in range(self.V):
+            for u in self.graph:
+                for v, weight in self.graph[u]:
+                    if dist[u] != float('inf') and dist[u] + weight < dist[v]:
+                        dist[v] = dist[u] + weight
+
+        # Verificar si hay un ciclo de peso negativo
+        for u in self.graph:
+            for v, weight in self.graph[u]:
+                if dist[u] != float('inf') and dist[u] + weight < dist[v]:
+                    return None  # Hay un ciclo de peso negativo
+
+        return dist
+
+    def adjustWeights(self, dist):
+        adjusted_weights = defaultdict(dict)
+        for u in self.graph:
+            for v, weight in self.graph[u]:
+                adjusted_weights[u][v] = weight + dist[u] - dist[v]
+        return adjusted_weights
+
+    def dijkstra(self, src):
+        dist = [float('inf')] * self.V
+        dist[src] = 0
+
+        minHeap = [(0, src)]
+
+        while minHeap:
+            distance, u = heapq.heappop(minHeap)
+
+            if distance > dist[u]:
+                continue
+
+            for v, weight in self.graph[u]:
+                if dist[u] + weight < dist[v]:
+                    dist[v] = dist[u] + weight
+                    heapq.heappush(minHeap, (dist[v], v))
+
+        return dist
+
+def prim(G):
+    n = len(G)
+    visited = [False]*n
+    path = [-1]*n
+    cost = [math.inf]*n
+
+    cost[0] = 0
+    q = [(0, 0)]
+    while q:
+        _, u = heapq.heappop(q)
+        if visited[u]: continue
+        visited[u] = True
+        for v, w in G[u]:
+            if not visited[v] and w < cost[v]:
+                cost[v] = w
+                path[v] = u
+                heapq.heappush(q, (w, v))
+
+    return path
+
+def kruskal(G):
+    n = len(G)
+    ds = DisjointSet(n)
+    edges = [(w, u, v) for u in range(n) for v, w in G[u]]
+    edges.sort()
+    mst = []
+    result = []
+    links = 0
+    for w, u, v in edges:
+        if ds.find(u) != ds.find(v):
+           ds.union(u, v)
+           result.append((u, v, w))
+           mst.append((u, v))
+           links += 1
+        if links == n - 1: break
+    tot_w = 0
+    for u, v, w in result:
+      tot_w += w
+      print("%d - %d: %d" % (u, v, w))
+    print("Costo total del MST para el grafo: ", tot_w)
+    return mst
+def prim(G, start = 0):
+        n = len(G)
+        visited = [False] * n
+        key = [float("inf")] * n
+        parent = [-1] * n
+        minHeap = []
+
+        heapq.heappush(minHeap, (0, start))
+        key[start] = 0
+
+        while minHeap:
+            _, u = heapq.heappop(minHeap)
+            if visited[u]: continue
+            visited[u] = True
+            for v, weight in G[u]:
+                if not visited[v] and weight < key[v]:
+                    key[v] = weight
+                    parent[v] = u
+                    heapq.heappush(minHeap, (weight, v))
+
+        printArr(parent, n)
+        return parent
 def loadGraphAL(fn):
   with open(fn) as f:
     G = []
